@@ -2,14 +2,32 @@ quick_draw_data_set=["aircraft carrier","airplane","alarm clock","ambulance","an
 random_no = Math.floor((Math.random()*quick_draw_data_set.length)+1);
 console.log(quick_draw_data_set[random_no]);
 sketch=quick_draw_data_set[random_no];
-document.getElementById('label').innerHTML='Sketch to be drawn: '+sketch;
+document.getElementById('sketchtobedrawn').innerHTML='Sketch to be drawn: '+sketch;
+time_counter=0;
+time_check="";
 
+function updateCanvas(){
+    background('white');
+    random_no = Math.floor((Math.random()*quick_draw_data_set.length)+1);
+console.log(quick_draw_data_set[random_no]);
+sketch=quick_draw_data_set[random_no];
+document.getElementById('sketchtobedrawn').innerHTML='Sketch to be drawn: '+sketch;
+}
+function preload(){
+    classifier=ml5.imageClassifier("DoodleNet");
+}
 function setup(){
     canvas=createCanvas(280,280);
     canvas.center();
     background('white');
+    canvas.mouseReleased(classifyCanvas);
 }
 function draw(){
+    strokeWeight(13);
+    stroke('black');
+    if(mouseIsPressed){
+        line(pmouseX,pmouseY,mousex,mousey);
+    }
     check_sketch();
     if(drawn_sketch==sketch)
     {
@@ -18,6 +36,19 @@ function draw(){
         document.getElementById('score').innerHTML='Score: '+score;
     }
 }
+function classifyCanvas(){
+    classifier.classify(canvas,gotResult);
+}
+function gotResult(error,results){
+    if(error){
+        console.log(error);
+    }
+    console.log(results);
+    drawn_sketch=results[0].label;
+    document.getElementById('label').innerHTML="your sketch:"+drawn_sketch;
+}
+
+
 function check_sketch(){
     time_counter++
     document.getElementById('timer').innerHTML='Timer: '+time_counter;
@@ -27,12 +58,10 @@ function check_sketch(){
         time_counter=0;
         time_check="Completed";
     }
-    if(time_check="Completed"|| answer_holder=='set')
+    if(time_check=="Completed"  ||  answer_holder=='set')
     {
         time_check="";
         answer_holder="";
         updateCanvas();
     }
 }
-
-
